@@ -1,0 +1,8 @@
+rootProject.name='xzlRouter'
+include ':app'
+include ':libs'
+include ':zlrouter_annotation'
+include ':zlrouter_compiler'
+include ':zlrouter_inject'
+include ':testmodule1'
+include ':testmodule2'

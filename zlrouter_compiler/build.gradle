@@ -1,0 +1,14 @@
+apply plugin: 'java-library'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.google.auto.service:auto-service:1.0'
+    annotationProcessor 'com.google.auto.service:auto-service:1.0'
+    implementation "com.squareup:javapoet:1.13.0"
+    implementation project(":zlrouter_annotation")
+}
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
+// 模块作用 扫描解析处理注解，最终生成.java文件
