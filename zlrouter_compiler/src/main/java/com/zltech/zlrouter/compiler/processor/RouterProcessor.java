@@ -86,10 +86,6 @@ public class RouterProcessor extends AbstractProcessor {
     @Override
     public synchronized void init(ProcessingEnvironment processingEnvironment) {
         super.init(processingEnvironment);
-        log = ProcessLog.newLog(processingEnvironment.getMessager());
-        elementUtils = processingEnvironment.getElementUtils();
-        typeUtils = processingEnvironment.getTypeUtils();
-        filerUtils = processingEnvironment.getFiler();
 
         //参数是模块名 为了防止多模块/组件化开发的时候 生成相同的 xx$$ROOT$$文件
         Map<String, String> options = processingEnvironment.getOptions();
@@ -97,9 +93,15 @@ public class RouterProcessor extends AbstractProcessor {
             moduleName = options.get(Constant.ARGUMENTS_NAME);
         }
         if (Utils.isEmpty(moduleName)) {
-            throw new RuntimeException("Not set processor moudleName option !");
+            log.i("Not set processor moudleName option,return...");
+            return;
         }
         log.i("*******************************init RouterProcessor " + moduleName + " success !");
+
+        log = ProcessLog.newLog(processingEnvironment.getMessager());
+        elementUtils = processingEnvironment.getElementUtils();
+        typeUtils = processingEnvironment.getTypeUtils();
+        filerUtils = processingEnvironment.getFiler();
     }
 
 
@@ -111,7 +113,7 @@ public class RouterProcessor extends AbstractProcessor {
      */
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
-        if(Utils.isEmpty(set))return false;
+        if(Utils.isEmpty(set) || Utils.isEmpty(moduleName))return false;
         //被Route注解的节点集合
         Set<? extends Element> rootElements = roundEnvironment.getElementsAnnotatedWith(Route.class);
         log.i(rootElements.toString()); //[com.zltech.zlrouter.app.TestActivity, com.zltech.zlrouter.app.MainActivity]
