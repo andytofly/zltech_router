@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
          */
         buttonFragment.setOnClickListener {
             val result = ZlRouter.getInstance().build("/module1/testFragment").withString("key","xinzailing").call()
-            Log.d(TAG, "fragment = ${result.getResult<BaseFragment2>("result")}")
+            Log.d(TAG, "fragment = ${result?.getResult<BaseFragment2>("result")}")
         }
 
         /**
@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
          */
         buttonView.setOnClickListener {
             val result = ZlRouter.getInstance().build("/module2/testView").call()
-            Log.d(TAG, "fragment = ${result.getResult<TextView>("result")}")
+            Log.d(TAG, "view = ${result?.getResult<TextView>("result")}")
         }
 
     }
