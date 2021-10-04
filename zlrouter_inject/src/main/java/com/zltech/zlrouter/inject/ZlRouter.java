@@ -85,7 +85,7 @@ public class ZlRouter {
     }
 
 
-    public Postcard build(String path) {
+    public JumpCard build(String path) {
         if (TextUtils.isEmpty(path)) {
             throw new RuntimeException("路由地址无效!");
         } else {
@@ -93,25 +93,25 @@ public class ZlRouter {
         }
     }
 
-    public Postcard build(String path, String group) {
+    public JumpCard build(String path, String group) {
         if (TextUtils.isEmpty(path) || TextUtils.isEmpty(group)) {
             throw new RuntimeException("路由地址无效!");
         } else {
-            return new Postcard(path, group);
+            return new JumpCard(path, group);
         }
     }
 
     /**
-     * @param postcard
+     * @param jumpCard
      * @param type
      * @return
      */
-    RtResult call(final Postcard postcard, AbsComponent.InvokingType type, OnResultCallback callback) {
+    RtResult call(final JumpCard jumpCard, AbsComponent.InvokingType type, OnResultCallback callback) {
         try {
             /**
-             *  对 postcard 进行赋值处理...
+             *  对 jumper 进行赋值处理...
              */
-            prepareCard(postcard, InvokeType_Call);
+            prepareCard(jumpCard, InvokeType_Call);
         } catch (NoRouteFoundException e) {
             e.printStackTrace();
             //没找到
@@ -119,23 +119,23 @@ public class ZlRouter {
         }
 
         if (type == AbsComponent.InvokingType.Async) {
-            postcard.getComponent().callAsync(callback);
+            jumpCard.getComponent().callAsync(callback);
             return null;
         } else if (type == AbsComponent.InvokingType.MainThread) {
-            postcard.getComponent().callOnMainThread(callback);
+            jumpCard.getComponent().callOnMainThread(callback);
             return null;
         } else {
-            return postcard.getComponent().call();
+            return jumpCard.getComponent().call();
         }
     }
 
 
-    void navigate(final Context context, final Postcard postcard, final int requestCode) {
+    void navigate(final Context context, final JumpCard jumpCard, final int requestCode) {
         try {
             /**
-             *  对 postcard 进行赋值处理...
+             *  对 jumper 进行赋值处理...
              */
-            prepareCard(postcard, InvokeType_Navigate);
+            prepareCard(jumpCard, InvokeType_Navigate);
         } catch (NoRouteFoundException e) {
             e.printStackTrace();
             //没找到
@@ -143,9 +143,9 @@ public class ZlRouter {
         }
 
         final Context currentContext = null == context ? mContext : context;
-        final Intent intent = new Intent(currentContext, postcard.getDestination());
-        intent.putExtras(postcard.getExtras());
-        int flags = postcard.getFlags();
+        final Intent intent = new Intent(currentContext, jumpCard.getDestination());
+        intent.putExtras(jumpCard.getExtras());
+        int flags = jumpCard.getFlags();
         if (-1 != flags) {
             intent.setFlags(flags);
         } else if (!(currentContext instanceof Activity)) {
@@ -174,7 +174,7 @@ public class ZlRouter {
      * @param card
      * @param invokeType
      */
-    private void prepareCard(Postcard card, int invokeType) {
+    private void prepareCard(JumpCard card, int invokeType) {
         RouteMeta routeMeta = Warehouse.routes.get(card.getPath());
         if (null == routeMeta) {
             /**

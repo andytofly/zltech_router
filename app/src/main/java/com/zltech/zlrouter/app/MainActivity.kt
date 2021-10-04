@@ -4,11 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.zltech.zlrouter.R
 import com.zltech.zlrouter.annotation.Route
-import com.zltech.zlrouter.inject.Postcard
 import com.zltech.zlrouter.inject.ZlRouter
 import com.zltech.zlrouter.libs.BaseFragment2
 //import com.zltech.zlrouter.libs.providers.module1.Module1Providers

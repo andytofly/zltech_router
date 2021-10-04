@@ -9,7 +9,7 @@ import com.zltech.zlrouter.inject.template.AbsComponent
 import com.zltech.zlrouter.inject.template.RtResult
 import java.util.*
 
-class Jumper @JvmOverloads constructor(path: String?, group: String?, bundle: Bundle? = null) :
+class JumpCard @JvmOverloads constructor(path: String?, group: String?, bundle: Bundle? = null) :
     RouteMeta() {
     val extras: Bundle
     var flags = -1
@@ -32,122 +32,122 @@ class Jumper @JvmOverloads constructor(path: String?, group: String?, bundle: Bu
      * @param flag
      * @return
      */
-    fun withFlags(flag: Int): Jumper {
+    fun withFlags(flag: Int): JumpCard {
         flags = flag
         return this
     }
 
-    fun withString(key: String?, value: String?): Jumper {
+    fun withString(key: String?, value: String?): JumpCard {
         extras.putString(key, value)
         return this
     }
 
-    fun withBoolean(key: String?, value: Boolean): Jumper {
+    fun withBoolean(key: String?, value: Boolean): JumpCard {
         extras.putBoolean(key, value)
         return this
     }
 
-    fun withShort(key: String?, value: Short): Jumper {
+    fun withShort(key: String?, value: Short): JumpCard {
         extras.putShort(key, value)
         return this
     }
 
-    fun withInt(key: String?, value: Int): Jumper {
+    fun withInt(key: String?, value: Int): JumpCard {
         extras.putInt(key, value)
         return this
     }
 
-    fun withLong(key: String?, value: Long): Jumper {
+    fun withLong(key: String?, value: Long): JumpCard {
         extras.putLong(key, value)
         return this
     }
 
-    fun withDouble(key: String?, value: Double): Jumper {
+    fun withDouble(key: String?, value: Double): JumpCard {
         extras.putDouble(key, value)
         return this
     }
 
-    fun withByte(key: String?, value: Byte): Jumper {
+    fun withByte(key: String?, value: Byte): JumpCard {
         extras.putByte(key, value)
         return this
     }
 
-    fun withChar(key: String?, value: Char): Jumper {
+    fun withChar(key: String?, value: Char): JumpCard {
         extras.putChar(key, value)
         return this
     }
 
-    fun withFloat(key: String?, value: Float): Jumper {
+    fun withFloat(key: String?, value: Float): JumpCard {
         extras.putFloat(key, value)
         return this
     }
 
-    fun withParcelable(key: String?, value: Parcelable?): Jumper {
+    fun withParcelable(key: String?, value: Parcelable?): JumpCard {
         extras.putParcelable(key, value)
         return this
     }
 
-    fun withStringArray(key: String?, value: Array<String?>?): Jumper {
+    fun withStringArray(key: String?, value: Array<String?>?): JumpCard {
         extras.putStringArray(key, value)
         return this
     }
 
-    fun withBooleanArray(key: String?, value: BooleanArray?): Jumper {
+    fun withBooleanArray(key: String?, value: BooleanArray?): JumpCard {
         extras.putBooleanArray(key, value)
         return this
     }
 
-    fun withShortArray(key: String?, value: ShortArray?): Jumper {
+    fun withShortArray(key: String?, value: ShortArray?): JumpCard {
         extras.putShortArray(key, value)
         return this
     }
 
-    fun withIntArray(key: String?, value: IntArray?): Jumper {
+    fun withIntArray(key: String?, value: IntArray?): JumpCard {
         extras.putIntArray(key, value)
         return this
     }
 
-    fun withLongArray(key: String?, value: LongArray?): Jumper {
+    fun withLongArray(key: String?, value: LongArray?): JumpCard {
         extras.putLongArray(key, value)
         return this
     }
 
-    fun withDoubleArray(key: String?, value: DoubleArray?): Jumper {
+    fun withDoubleArray(key: String?, value: DoubleArray?): JumpCard {
         extras.putDoubleArray(key, value)
         return this
     }
 
-    fun withByteArray(key: String?, value: ByteArray?): Jumper {
+    fun withByteArray(key: String?, value: ByteArray?): JumpCard {
         extras.putByteArray(key, value)
         return this
     }
 
-    fun withCharArray(key: String?, value: CharArray?): Jumper {
+    fun withCharArray(key: String?, value: CharArray?): JumpCard {
         extras.putCharArray(key, value)
         return this
     }
 
-    fun withFloatArray(key: String?, value: FloatArray?): Jumper {
+    fun withFloatArray(key: String?, value: FloatArray?): JumpCard {
         extras.putFloatArray(key, value)
         return this
     }
 
-    fun withParcelableArray(key: String?, value: Array<Parcelable?>?): Jumper {
+    fun withParcelableArray(key: String?, value: Array<Parcelable?>?): JumpCard {
         extras.putParcelableArray(key, value)
         return this
     }
 
-    fun withParcelableArrayList(key: String?, value: ArrayList<out Parcelable?>?): Jumper {
+    fun withParcelableArrayList(key: String?, value: ArrayList<out Parcelable?>?): JumpCard {
         extras.putParcelableArrayList(key, value)
         return this
     }
 
-    fun withIntegerArrayList(key: String?, value: ArrayList<Int?>?): Jumper {
+    fun withIntegerArrayList(key: String?, value: ArrayList<Int?>?): JumpCard {
         extras.putIntegerArrayList(key, value)
         return this
     }
 
-    fun withStringArrayList(key: String?, value: ArrayList<String?>?): Jumper {
+    fun withStringArrayList(key: String?, value: ArrayList<String?>?): JumpCard {
         extras.putStringArrayList(key, value)
         return this
     }
