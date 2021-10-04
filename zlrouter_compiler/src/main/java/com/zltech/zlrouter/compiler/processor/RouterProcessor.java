@@ -86,8 +86,8 @@ public class RouterProcessor extends AbstractProcessor {
     @Override
     public synchronized void init(ProcessingEnvironment processingEnvironment) {
         super.init(processingEnvironment);
-
         //参数是模块名 为了防止多模块/组件化开发的时候 生成相同的 xx$$ROOT$$文件
+        log = ProcessLog.newLog(processingEnvironment.getMessager());
         Map<String, String> options = processingEnvironment.getOptions();
         if (!Utils.isEmpty(options)) {
             moduleName = options.get(Constant.ARGUMENTS_NAME);
@@ -98,7 +98,6 @@ public class RouterProcessor extends AbstractProcessor {
         }
         log.i("*******************************init RouterProcessor " + moduleName + " success !");
 
-        log = ProcessLog.newLog(processingEnvironment.getMessager());
         elementUtils = processingEnvironment.getElementUtils();
         typeUtils = processingEnvironment.getTypeUtils();
         filerUtils = processingEnvironment.getFiler();
