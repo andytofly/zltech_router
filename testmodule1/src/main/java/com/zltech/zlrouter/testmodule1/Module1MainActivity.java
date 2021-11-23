@@ -70,10 +70,13 @@ public class Module1MainActivity extends AppCompatActivity {
 
         buttonFinish = findViewById(R.id.buttonFinish);
         buttonFinish.setOnClickListener(v->{
-            Intent intent = new Intent();
-            intent.putExtra("back","123aaabbb");
-            setResult(1002,intent);
+//            Intent intent = new Intent();
+//            intent.putExtra("back","123aaabbb");
+//            setResult(1002,intent);
+            RtResult result = new RtResult();
+            result.putResult("back_value", "123aaabbb啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊.....");
             finish();
+            ZlRouter.getInstance().getCallback(Module1MainActivity.this).onResult(result);
         });
     }
 }

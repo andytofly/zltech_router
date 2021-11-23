@@ -24,4 +24,13 @@ public class RtResult {
         if (o == null) return null;
         return (T) o;
     }
+
+    @Override
+    public String toString() {
+        return "RtResult{" +
+                "success=" + success +
+                ", data=" + data +
+                ", error='" + error + '\'' +
+                '}';
+    }
 }

@@ -14,10 +14,11 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 @Route(path = "/app/entry")
 class MainActivity : AppCompatActivity() {
-//    private lateinit var module1Providers: Module1Providers
-    companion object{
+    //    private lateinit var module1Providers: Module1Providers
+    companion object {
         const val TAG = "app_MainActivity "
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -26,22 +27,25 @@ class MainActivity : AppCompatActivity() {
          * 跳转activity，附带参数,获取返回结果
          */
         button1.setOnClickListener {
-            ZlRouter.getInstance().build("/module1/module1main")
-                .withString("msg", "从MainActivity来的参数").navigate(this,1001)
+            ZlRouter.getInstance().build("/module1/module1main").withContext(this)
+                .withString("msg", "zwf是猪~~~~").call { result ->
+                    Log.d("msg","result!! "+result)
+                }
         }
 
         /**
          * 跳转activity，
          */
         button2.setOnClickListener {
-            ZlRouter.getInstance().build("/module2/module2main").navigate()
+            ZlRouter.getInstance().build("/module2/module2main").call()
         }
 
         /**
          * 获取其他模块的fragment
          */
         buttonFragment.setOnClickListener {
-            val result = ZlRouter.getInstance().build("/module1/testFragment").withString("key","xinzailing").call()
+            val result = ZlRouter.getInstance().build("/module1/testFragment")
+                .withString("key", "xinzailing").call()
             Log.d(TAG, "fragment = ${result?.getResult<BaseFragment2>("result")}")
         }
 
@@ -57,9 +61,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if(resultCode == 1002){
+        if (resultCode == 1002) {
             val back = data?.extras?.getString("back")
-            Log.d(TAG,back?:"null....")
+            Log.d(TAG, back ?: "null....")
         }
     }
 }

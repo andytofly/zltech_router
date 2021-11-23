@@ -7,6 +7,7 @@ import com.zltech.zlrouter.annotation.RouteMeta
 import com.zltech.zlrouter.inject.callback.OnResultCallback
 import com.zltech.zlrouter.inject.template.AbsComponent
 import com.zltech.zlrouter.inject.template.RtResult
+import java.lang.ref.WeakReference
 import java.util.*
 
 class JumpCard @JvmOverloads constructor(path: String?, group: String?, bundle: Bundle? = null) :
@@ -24,6 +25,14 @@ class JumpCard @JvmOverloads constructor(path: String?, group: String?, bundle: 
 
     fun setService(service: AbsComponent?) {
         component = service
+    }
+
+
+    private var mContext:Context? = null
+
+    fun withContext(context:Context):JumpCard{
+        mContext = context
+        return this
     }
 
     /**
@@ -151,22 +160,7 @@ class JumpCard @JvmOverloads constructor(path: String?, group: String?, bundle: 
         extras.putStringArrayList(key, value)
         return this
     }
-    /**
-     * Activity跳转专属方法
-     */
-    /**
-     * Activity跳转专属方法
-     */
-    /**
-     * Activity跳转专属方法
-     */
-    @JvmOverloads
-    fun navigate(context: Context? = null, requestCode: Int = -1) {
-//        if(this.getType() != Type.ACTIVITY){
-//            throw new RuntimeException("服务请调用call方法");
-//        }
-        ZlRouter.getInstance().navigate(context, this, requestCode)
-    }
+
 
     /***
      * 调用AbsComponent专属方法
@@ -174,26 +168,17 @@ class JumpCard @JvmOverloads constructor(path: String?, group: String?, bundle: 
      */
     @JvmOverloads
     fun call(callback: OnResultCallback? = null): RtResult? {
-//        if(this.getType() != Type.COMPONENT){
-//            throw new RuntimeException("跳转Activity请调用navigate方法");
-//        }
-        return ZlRouter.getInstance().call(this, AbsComponent.InvokingType.Sync, callback)
+        return ZlRouter.getInstance().dispatch(mContext,this, AbsComponent.InvokingType.Sync, callback)
     }
 
     @JvmOverloads
     fun callAsync(callback: OnResultCallback? = null) {
-//        if(this.getType() != Type.COMPONENT){
-//            throw new RuntimeException("跳转Activity请调用navigate方法");
-//        }
-        ZlRouter.getInstance().call(this, AbsComponent.InvokingType.Async, callback)
+        ZlRouter.getInstance().dispatch(mContext,this, AbsComponent.InvokingType.Async, callback)
     }
 
     @JvmOverloads
     fun callOnMainThread(callback: OnResultCallback? = null) {
-//        if(this.getType() != Type.COMPONENT){
-//            throw new RuntimeException("跳转Activity请调用navigate方法");
-//        }
-        ZlRouter.getInstance().call(this, AbsComponent.InvokingType.MainThread, callback)
+        ZlRouter.getInstance().dispatch(mContext,this, AbsComponent.InvokingType.MainThread, callback)
     }
 
     init {
