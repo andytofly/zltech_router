@@ -1,4 +1,4 @@
-rootProject.name='xzlRouter'
+rootProject.name='zltech_router'
 include ':app'
 include ':libs'
 include ':zlrouter_annotation'
