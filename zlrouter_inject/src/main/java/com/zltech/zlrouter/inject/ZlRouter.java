@@ -70,8 +70,13 @@ public class ZlRouter {
      */
     private static AtomicBoolean initDone = new AtomicBoolean(false);
 
-    public static void init(boolean isDebug,Application _application) {
-        setDebuggable(isDebug);
+    /**
+     * 注意，如果设置isDebug = true，那么每次都会从dexFile加载，非常耗时间，仅用于调试；所以在调式模式，也要根据实际情况设置该参数;
+     * @param debuggable
+     * @param _application
+     */
+    public static void init(boolean debuggable,Application _application) {
+        setDebuggable(debuggable);
         init(_application);
     }
 
@@ -91,22 +96,15 @@ public class ZlRouter {
         });
     }
 
-    private static boolean isDebug = false;
+    private static boolean debuggable = false;
 
     public static void setDebuggable(boolean _isDebug) {
-        isDebug = _isDebug;
-        LogUtil.setLog(isDebug);
-        Log.d(Const.TAG," setLog isDebug = "+isDebug);
+        debuggable = _isDebug;
+        LogUtil.setLog(debuggable);
+        Log.d(Const.TAG," setLog debuggable = "+debuggable);
     }
 
     public static boolean debuggable() {
-        boolean debuggable;
-        if (BuildConfig.DEBUG) {
-            debuggable = isDebug;
-        } else {
-            debuggable = false;
-        }
-        Log.d(Const.TAG, "BuildConfig.DEBUG "+BuildConfig.DEBUG+" debuggable:"+debuggable);
         return debuggable;
     }
 
