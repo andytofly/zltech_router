@@ -20,12 +20,15 @@ import com.zltech.zlrouter.inject.template.IRouteGroup;
 import com.zltech.zlrouter.inject.template.IRouteRoot;
 import com.zltech.zlrouter.inject.template.AbsComponent;
 import com.zltech.zlrouter.inject.template.RtResult;
+import com.zltech.zlrouter.inject.thread.ZltechPoolExecutor;
 import com.zltech.zlrouter.inject.utils.ClassUtils;
+import com.zltech.zlrouter.inject.utils.Utils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.zltech.zlrouter.annotation.RouteMeta.Type.ACTIVITY;
 import static com.zltech.zlrouter.annotation.RouteMeta.Type.COMPONENT;
@@ -55,14 +58,22 @@ public class ZlRouter {
      *
      * @param _application
      */
+    private static AtomicBoolean initDone = new AtomicBoolean(false);
+
     public static void init(Application _application) {
         application = _application;
-        try {
-            loadInfo();
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e(TAG, "初始化失败!", e);
-        }
+        ZltechPoolExecutor.getInstance().execute(() -> {
+            try {
+                Log.d(Const.TAG, " zlrouter即将初始化");
+                loadInfo();
+                initDone.set(true);
+                Log.d(Const.TAG, " zlrouter初始化完成!!!");
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(Const.TAG, "zlrouter初始化失败!", e);
+                initDone.set(false);
+            }
+        });
     }
 
 
@@ -71,6 +82,8 @@ public class ZlRouter {
      */
     private static void loadInfo() throws PackageManager.NameNotFoundException, InterruptedException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         //获得所有 apt生成的路由类的全类名 (路由表)
+        long startTime = System.currentTimeMillis();
+        Log.d(Const.TAG, Thread.currentThread().toString() + " loadInfo start time—> " + Utils.formatTime1());
         Set<String> routerMap = ClassUtils.getFileNameByPackageName(application, ROUTE_ROOT_PAKCAGE);
         for (String className : routerMap) {
             if (className.startsWith(ROUTE_ROOT_PAKCAGE + "." + SDK_NAME + SEPARATOR + SUFFIX_ROOT)) {
@@ -80,15 +93,17 @@ public class ZlRouter {
 
             }
         }
+        Log.d(Const.TAG, Thread.currentThread().toString() + " loadInfo end time—> " + (System.currentTimeMillis() - startTime) + "ms");
         for (Map.Entry<String, Class<? extends IRouteGroup>> stringClassEntry : Warehouse.groupsIndex.entrySet()) {
             Log.d(TAG, "Root映射表[ " + stringClassEntry.getKey() + " : " + stringClassEntry.getValue() + "]");
         }
-
     }
 
 
     public JumpCard build(String path) {
-        if (TextUtils.isEmpty(path)) {
+        if (!initDone.get()){
+            throw new RuntimeException("zlrouter没有初始化完成，无法调用!");
+        } else if (TextUtils.isEmpty(path)) {
             throw new RuntimeException("路由地址无效!");
         } else {
             return build(path, extractGroup(path));
@@ -104,24 +119,24 @@ public class ZlRouter {
     }
 
 
-    RtResult dispatch(final Context context, final JumpCard jumpCard, AbsComponent.InvokingType type, OnResultCallback callback){
+    RtResult dispatch(final Context context, final JumpCard jumpCard, AbsComponent.InvokingType type, OnResultCallback callback) {
         try {
             /**
              *  对 jumper 进行赋值处理...
              */
-            prepareCard(context,jumpCard, InvokeType_Navigate);
+            prepareCard(context, jumpCard, InvokeType_Navigate);
         } catch (NoRouteFoundException e) {
             e.printStackTrace();
             //没找到
             return null;
         }
-        if(jumpCard.getType() == ACTIVITY){
+        if (jumpCard.getType() == ACTIVITY) {
             //如果Activity的跳转，会忽视InvokingType
-            Log.w(TAG,"Activity 级别的跳转，忽视InvokingType");
-            navigate(context,jumpCard,callback);
+            Log.w(TAG, "Activity 级别的跳转，忽视InvokingType");
+            navigate(context, jumpCard, callback);
             return null;
-        }else{
-            return callComponent(context,jumpCard,type,callback);
+        } else {
+            return callComponent(context, jumpCard, type, callback);
         }
     }
 
@@ -131,7 +146,7 @@ public class ZlRouter {
      * @param type
      * @return
      */
-    RtResult callComponent(Context context,final JumpCard jumpCard, AbsComponent.InvokingType type, OnResultCallback callback) {
+    RtResult callComponent(Context context, final JumpCard jumpCard, AbsComponent.InvokingType type, OnResultCallback callback) {
         if (type == AbsComponent.InvokingType.Async) {
             jumpCard.getComponent().callAsync(callback);
             return null;
@@ -147,11 +162,11 @@ public class ZlRouter {
     /**
      * Activity回调的保存,如果是Component，是调用完直接回调，不需要保存；
      */
-    private ConcurrentHashMap<String,OnResultCallback> activityCallbackMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, OnResultCallback> activityCallbackMap = new ConcurrentHashMap<>();
 
     public OnResultCallback getCallback(Activity activity) {
         String canonicalName = activity.getClass().getCanonicalName();
-        if(canonicalName != null && activityCallbackMap.containsKey(canonicalName)){
+        if (canonicalName != null && activityCallbackMap.containsKey(canonicalName)) {
             return activityCallbackMap.get(canonicalName);
         }
         return null;
@@ -160,9 +175,9 @@ public class ZlRouter {
     void navigate(final Context context, final JumpCard jumpCard, OnResultCallback callback) {
 
         Class<?> destination = jumpCard.getDestination();
-        if(callback != null && destination != null) {
+        if (callback != null && destination != null) {
             String canonicalName = destination.getCanonicalName();
-            if(canonicalName != null) {
+            if (canonicalName != null) {
                 activityCallbackMap.put(canonicalName, callback);
             }
         }
@@ -225,7 +240,7 @@ public class ZlRouter {
             //已经准备过了就可以移除了 (不会一直存在内存中)
             Warehouse.groupsIndex.remove(card.getGroup());
             //再次进入 else
-            prepareCard(context,card, invokeType);
+            prepareCard(context, card, invokeType);
         } else {
             //类 要跳转的activity 或Component实现类
             card.setDestination(routeMeta.getDestination());
@@ -293,6 +308,9 @@ public class ZlRouter {
     }
 
     public static ZlRouter getInstance() {
+        if (!initDone.get()) {
+            Log.e(Const.TAG, "ZlRouter 静态方法没有初始化完成，还不能调用!!!");
+        }
         return SingleTonHoler.INSTANCE;
     }
     /***end***/

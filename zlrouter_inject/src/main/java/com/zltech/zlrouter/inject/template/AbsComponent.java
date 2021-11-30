@@ -6,11 +6,8 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 
 import com.zltech.zlrouter.inject.callback.OnResultCallback;
-import com.zltech.zlrouter.inject.thread.DefaultPoolExecutor;
+import com.zltech.zlrouter.inject.thread.ZltechPoolExecutor;
 import com.zltech.zlrouter.inject.utils.HandlerUtil;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 区别于Activity以外的服务对象, 调用方式，有3种
@@ -56,24 +53,14 @@ public abstract class AbsComponent {
      * 子线程调用
      */
     public void callAsync(final OnResultCallback callback) {
-        DefaultPoolExecutor.executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                handle(callback);
-            }
-        });
+        ZltechPoolExecutor.getInstance().execute(() -> handle(callback));
     }
 
     /**
      * 主线程调用
      */
     public void callOnMainThread(final OnResultCallback callback) {
-        HandlerUtil.handler.post(new Runnable() {
-            @Override
-            public void run() {
-                handle(callback);
-            }
-        });
+        HandlerUtil.handler.post(() -> handle(callback));
     }
 
     /**
