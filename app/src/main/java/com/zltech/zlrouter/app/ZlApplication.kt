@@ -6,7 +6,7 @@ import com.zltech.zlrouter.inject.ZlRouter
 class ZlApplication :Application(){
     override fun onCreate() {
         super.onCreate()
-        ZlRouter.init(this);
+        ZlRouter.init(this, listOf())
     }
 
 

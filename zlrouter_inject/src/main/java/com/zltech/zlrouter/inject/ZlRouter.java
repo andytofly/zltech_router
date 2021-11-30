@@ -22,9 +22,11 @@ import com.zltech.zlrouter.inject.template.AbsComponent;
 import com.zltech.zlrouter.inject.template.RtResult;
 import com.zltech.zlrouter.inject.thread.ZltechPoolExecutor;
 import com.zltech.zlrouter.inject.utils.ClassUtils;
+import com.zltech.zlrouter.inject.utils.LogUtil;
 import com.zltech.zlrouter.inject.utils.Utils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,17 +62,17 @@ public class ZlRouter {
      */
     private static AtomicBoolean initDone = new AtomicBoolean(false);
 
-    public static void init(Application _application) {
+    public static void init(Application _application, List<String> packages) {
         application = _application;
         ZltechPoolExecutor.getInstance().execute(() -> {
             try {
-                Log.d(Const.TAG, " zlrouter即将初始化");
-                loadInfo();
+                LogUtil.d(Const.TAG, " zlrouter即将初始化");
+                loadInfo(packages);
                 initDone.set(true);
-                Log.d(Const.TAG, " zlrouter初始化完成!!!");
+                LogUtil.d(Const.TAG, " zlrouter初始化完成!!!");
             } catch (Exception e) {
                 e.printStackTrace();
-                Log.e(Const.TAG, "zlrouter初始化失败!", e);
+                LogUtil.e(Const.TAG, "zlrouter初始化失败!", e);
                 initDone.set(false);
             }
         });
@@ -80,11 +82,11 @@ public class ZlRouter {
     /**
      * 分组表制作，key(组名)-value(组对应的class文件) 【组对应的class文件，会装载各种服务，以路径来导航...不在该方法处理...】
      */
-    private static void loadInfo() throws PackageManager.NameNotFoundException, InterruptedException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    private static void loadInfo(List<String> packages) throws PackageManager.NameNotFoundException, InterruptedException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         //获得所有 apt生成的路由类的全类名 (路由表)
         long startTime = System.currentTimeMillis();
-        Log.d(Const.TAG, Thread.currentThread().toString() + " loadInfo start time—> " + Utils.formatTime1());
-        Set<String> routerMap = ClassUtils.getFileNameByPackageName(application, ROUTE_ROOT_PAKCAGE);
+        LogUtil.d(Const.TAG, Thread.currentThread().toString() + " loadInfo start time—> " + Utils.formatTime1());
+        Set<String> routerMap = ClassUtils.getFileNameByPackageName(application, ROUTE_ROOT_PAKCAGE,packages);
         for (String className : routerMap) {
             if (className.startsWith(ROUTE_ROOT_PAKCAGE + "." + SDK_NAME + SEPARATOR + SUFFIX_ROOT)) {
                 //root中注册的是分组信息 将分组信息加入仓库中
@@ -93,9 +95,9 @@ public class ZlRouter {
 
             }
         }
-        Log.d(Const.TAG, Thread.currentThread().toString() + " loadInfo end time—> " + (System.currentTimeMillis() - startTime) + "ms");
+        LogUtil.d(Const.TAG, Thread.currentThread().toString() + " loadInfo end time—> " + (System.currentTimeMillis() - startTime) + "ms");
         for (Map.Entry<String, Class<? extends IRouteGroup>> stringClassEntry : Warehouse.groupsIndex.entrySet()) {
-            Log.d(TAG, "Root映射表[ " + stringClassEntry.getKey() + " : " + stringClassEntry.getValue() + "]");
+            LogUtil.d(TAG, "Root映射表[ " + stringClassEntry.getKey() + " : " + stringClassEntry.getValue() + "]");
         }
     }
 
