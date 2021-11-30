@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.nfc.Tag;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -23,9 +23,11 @@ import com.zltech.zlrouter.inject.template.RtResult;
 import com.zltech.zlrouter.inject.thread.ZltechPoolExecutor;
 import com.zltech.zlrouter.inject.utils.ClassUtils;
 import com.zltech.zlrouter.inject.utils.LogUtil;
+import com.zltech.zlrouter.inject.utils.PackageUtils;
 import com.zltech.zlrouter.inject.utils.Utils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,7 +35,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.zltech.zlrouter.annotation.RouteMeta.Type.ACTIVITY;
-import static com.zltech.zlrouter.annotation.RouteMeta.Type.COMPONENT;
 
 public class ZlRouter {
 
@@ -49,11 +50,18 @@ public class ZlRouter {
     private static final String SEPARATOR = "_";
     private static final String SUFFIX_ROOT = "Root";
 
+    public static final String ZLROUTER_SP_CACHE_KEY = "ZLROUTER_SP_CACHE_KEY";
+    public static final String ZLROUTER_SP_KEY_MAP = "ZLROUTER_SP_KEY_MAP";
+
+    public static final String LAST_VERSION_NAME = "LAST_VERSION_NAME";
+    public static final String LAST_VERSION_CODE = "LAST_VERSION_CODE";
+
     private static Application application;
     private Handler mHandler;
 
     private static final int InvokeType_Navigate = 1000;
     private static final int InvokeType_Call = 1001;
+
 
     /**
      * 在调用 init方法之前，编译文件已经生成完毕...
@@ -62,12 +70,17 @@ public class ZlRouter {
      */
     private static AtomicBoolean initDone = new AtomicBoolean(false);
 
-    public static void init(Application _application, List<String> packages) {
+    public static void init(boolean isDebug,Application _application) {
+        setDebuggable(isDebug);
+        init(_application);
+    }
+
+    private static void init(Application _application) {
         application = _application;
         ZltechPoolExecutor.getInstance().execute(() -> {
             try {
                 LogUtil.d(Const.TAG, " zlrouter即将初始化");
-                loadInfo(packages);
+                loadInfo();
                 initDone.set(true);
                 LogUtil.d(Const.TAG, " zlrouter初始化完成!!!");
             } catch (Exception e) {
@@ -78,15 +91,40 @@ public class ZlRouter {
         });
     }
 
+    private static boolean isDebug = false;
+
+    public static void setDebuggable(boolean _isDebug) {
+        isDebug = _isDebug;
+        LogUtil.setLog(isDebug);
+    }
+
+    public static boolean debuggable() {
+        if (BuildConfig.DEBUG) {
+            return isDebug;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * 分组表制作，key(组名)-value(组对应的class文件) 【组对应的class文件，会装载各种服务，以路径来导航...不在该方法处理...】
      */
-    private static void loadInfo(List<String> packages) throws PackageManager.NameNotFoundException, InterruptedException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    private static void loadInfo() throws PackageManager.NameNotFoundException, InterruptedException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         //获得所有 apt生成的路由类的全类名 (路由表)
         long startTime = System.currentTimeMillis();
-        LogUtil.d(Const.TAG, Thread.currentThread().toString() + " loadInfo start time—> " + Utils.formatTime1());
-        Set<String> routerMap = ClassUtils.getFileNameByPackageName(application, ROUTE_ROOT_PAKCAGE,packages);
+        LogUtil.fd(Const.TAG, Thread.currentThread().toString() + " loadInfo start time—> " + Utils.formatTime1());
+
+        Set<String> routerMap;
+        if (ZlRouter.debuggable() || PackageUtils.isNewVersion(application)) {
+            routerMap = ClassUtils.getFileNameByPackageName(application, ROUTE_ROOT_PAKCAGE);
+            Log.d(Const.TAG, " debuggable || 首次运行 || 版本更新，解析dex，获取路由表......");
+            PackageUtils.updateVersion(application);
+        } else {
+            SharedPreferences sp = application.getSharedPreferences(ZLROUTER_SP_CACHE_KEY, Context.MODE_PRIVATE);
+            routerMap = sp.getStringSet(ZLROUTER_SP_KEY_MAP, new HashSet<>());
+            Log.d(Const.TAG, "从缓存中获取路由表,size = " + routerMap.size());
+        }
+
         for (String className : routerMap) {
             if (className.startsWith(ROUTE_ROOT_PAKCAGE + "." + SDK_NAME + SEPARATOR + SUFFIX_ROOT)) {
                 //root中注册的是分组信息 将分组信息加入仓库中
@@ -95,15 +133,15 @@ public class ZlRouter {
 
             }
         }
-        LogUtil.d(Const.TAG, Thread.currentThread().toString() + " loadInfo end time—> " + (System.currentTimeMillis() - startTime) + "ms");
+        LogUtil.fd(Const.TAG, Thread.currentThread().toString() + " loadInfo end time—> " + (System.currentTimeMillis() - startTime) + "ms");
         for (Map.Entry<String, Class<? extends IRouteGroup>> stringClassEntry : Warehouse.groupsIndex.entrySet()) {
-            LogUtil.d(TAG, "Root映射表[ " + stringClassEntry.getKey() + " : " + stringClassEntry.getValue() + "]");
+            Log.d(TAG, "Root映射表[ " + stringClassEntry.getKey() + " : " + stringClassEntry.getValue() + "]");
         }
     }
 
 
     public JumpCard build(String path) {
-        if (!initDone.get()){
+        if (!initDone.get()) {
             throw new RuntimeException("zlrouter没有初始化完成，无法调用!");
         } else if (TextUtils.isEmpty(path)) {
             throw new RuntimeException("路由地址无效!");

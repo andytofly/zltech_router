@@ -1,14 +1,18 @@
 package com.zltech.zlrouter.inject.utils;
 
+import static com.zltech.zlrouter.inject.ZlRouter.LAST_VERSION_CODE;
+import static com.zltech.zlrouter.inject.ZlRouter.LAST_VERSION_NAME;
+import static com.zltech.zlrouter.inject.ZlRouter.ZLROUTER_SP_CACHE_KEY;
+import static com.zltech.zlrouter.inject.ZlRouter.ZLROUTER_SP_KEY_MAP;
+
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.text.TextUtils;
-import android.util.Log;
 
-import com.zltech.zlrouter.inject.BuildConfig;
 import com.zltech.zlrouter.inject.Const;
 import com.zltech.zlrouter.inject.thread.ZltechPoolExecutor;
 
@@ -43,7 +47,7 @@ public class ClassUtils {
                 sourcePaths.addAll(Arrays.asList(applicationInfo.splitSourceDirs));
             }
         }
-        LogUtil.d(Const.TAG, " getSourcePaths time elapsed " + (System.currentTimeMillis() - startTime) + "ms");
+        LogUtil.fd(Const.TAG, " getSourcePaths time elapsed " + (System.currentTimeMillis() - startTime) + "ms");
         return sourcePaths;
     }
 
@@ -52,17 +56,17 @@ public class ClassUtils {
      *
      * @param context
      * @param packageName
-     * @param packages
      * @return
      * @throws PackageManager.NameNotFoundException
      * @throws InterruptedException
      */
-    public static Set<String> getFileNameByPackageName(Application context, final String packageName, List<String> packages)
+    public static Set<String> getFileNameByPackageName(Application context, final String packageName)
             throws PackageManager.NameNotFoundException, InterruptedException {
         final Set<String> classNames = new HashSet<>();
         List<String> paths = getSourcePaths(context);
+        LogUtil.fd(Const.TAG,"getSourcePaths size "+paths.size());
         //使用同步计数器判断均处理完成
-        LogUtil.d(Const.TAG, Thread.currentThread().toString() + " getFileNameByPackageName start time—> " + Utils.formatTime1());
+        LogUtil.fd(Const.TAG, Thread.currentThread().toString() + " getFileNameByPackageName start time—> " + Utils.formatTime1());
         long startTime = System.currentTimeMillis();
         final CountDownLatch countDownLatch = new CountDownLatch(paths.size());
 
@@ -74,15 +78,24 @@ public class ClassUtils {
                 int filterSize = 0;
                 try {
                     //加载 apk中的dex 并遍历 获得所有包名为 {packageName} 的类
-                    LogUtil.d(Const.TAG, " ****************** dexFile path *********************** " + path);
+                    LogUtil.fd(Const.TAG, " ****************** dexFile path *********************** " + path);
 
-                    dexFile = new DexFile(path);
-                    Enumeration<String> dexEntries = dexFile.entries();
+                    DexFile dexfile;
+                    if (!path.endsWith(".zip")) {
+                        dexfile = new DexFile(path);
+                        LogUtil.fd(Const.TAG,"~~use new DexFile ");
+                    } else {
+                        //NOT use new DexFile(path), because it will throw "permission error in /data/dalvik-cache"
+                        dexfile = DexFile.loadDex(path, path + ".tmp", 0);
+                        LogUtil.fd(Const.TAG,"~~use DexFile.loadDex ");
+                    }
+
+                    Enumeration<String> dexEntries = dexfile.entries();
 
                     while (dexEntries.hasMoreElements()) {
                         String className = dexEntries.nextElement();
                         if (!TextUtils.isEmpty(className) && className.startsWith(packageName)) {
-                            LogUtil.d(Const.TAG, "className " + className);
+                            LogUtil.fd(Const.TAG, "className " + className);
                             classNames.add(className);
                             filterSize ++;
                         }
@@ -99,15 +112,20 @@ public class ClassUtils {
                         }
                     }
                     //释放一个
-                    LogUtil.d(Const.TAG, " ******************dexEntries path" + path + " size " + size+" filterSize "+filterSize);
-                    LogUtil.d(Const.TAG, " end param dexFile path  " + path + " time elapsed " + (System.currentTimeMillis() - startTimeSub) + "ms");
+                    LogUtil.fd(Const.TAG, " path:" + path + " dex elements size " + size+" filterSize "+filterSize);
+                    LogUtil.fd(Const.TAG, " path:" + path + " time elapsed " + (System.currentTimeMillis() - startTimeSub) + "ms");
                     countDownLatch.countDown();
                 }
             });
         }
         //等待执行完成
         countDownLatch.await();
-        LogUtil.d(Const.TAG, Thread.currentThread().toString() + " getFileNameByPackageName end time elapsed—> " + (System.currentTimeMillis() - startTime) + "ms");
+
+        LogUtil.fd(Const.TAG,"will write router table to sp ");
+        SharedPreferences sp = context.getSharedPreferences(ZLROUTER_SP_CACHE_KEY, Context.MODE_PRIVATE);
+        sp.edit().putStringSet(ZLROUTER_SP_KEY_MAP, classNames).apply();
+
+        LogUtil.fd(Const.TAG, Thread.currentThread().toString() + " getFileNameByPackageName end time elapsed—> " + (System.currentTimeMillis() - startTime) + "ms");
         return classNames;
     }
 

@@ -2,11 +2,14 @@ package com.zltech.zlrouter.inject.utils;
 
 import android.util.Log;
 
-import com.zltech.zlrouter.inject.BuildConfig;
-
 public class LogUtil {
+    public static boolean logFlg = false;
+    public static void setLog(boolean flg){
+        logFlg = flg;
+    }
+
     public static void fd(String tag, String msg){
-        if(BuildConfig.DEBUG){
+        if(logFlg){
             Log.d(tag,msg);
         }
     }
