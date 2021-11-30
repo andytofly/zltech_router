@@ -96,14 +96,18 @@ public class ZlRouter {
     public static void setDebuggable(boolean _isDebug) {
         isDebug = _isDebug;
         LogUtil.setLog(isDebug);
+        Log.d(Const.TAG," setLog isDebug = "+isDebug);
     }
 
     public static boolean debuggable() {
+        boolean debuggable;
         if (BuildConfig.DEBUG) {
-            return isDebug;
+            debuggable = isDebug;
         } else {
-            return false;
+            debuggable = false;
         }
+        Log.d(Const.TAG, "BuildConfig.DEBUG "+BuildConfig.DEBUG+" debuggable:"+debuggable);
+        return debuggable;
     }
 
     /**
@@ -115,7 +119,10 @@ public class ZlRouter {
         LogUtil.fd(Const.TAG, Thread.currentThread().toString() + " loadInfo start time—> " + Utils.formatTime1());
 
         Set<String> routerMap;
-        if (ZlRouter.debuggable() || PackageUtils.isNewVersion(application)) {
+        boolean debuggable = ZlRouter.debuggable();
+        boolean newVersion = PackageUtils.isNewVersion(application);
+        LogUtil.fd(Const.TAG, "debuggable "+debuggable+" ,newVersion "+newVersion);
+        if ( debuggable || newVersion) {
             routerMap = ClassUtils.getFileNameByPackageName(application, ROUTE_ROOT_PAKCAGE);
             Log.d(Const.TAG, " debuggable || 首次运行 || 版本更新，解析dex，获取路由表......");
             PackageUtils.updateVersion(application);
