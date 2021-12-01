@@ -35,13 +35,13 @@ public class Module1MainActivity extends AppCompatActivity {
         String subMsg = getIntent().getStringExtra("msg");
         Toast.makeText(this, "subMsg=" + subMsg, Toast.LENGTH_SHORT).show();
 
-        Log.d(TAG,"~onCreate");
+        Log.d(TAG, "~onCreate");
 
         buttonCall = findViewById(R.id.buttonCall);
         buttonCall.setOnClickListener(v -> {
             RtResult call = ZlRouter.getInstance().build("/module2/plusServer")
-                    .withInt("key1",68)
-                    .withInt("key2",134)
+                    .withInt("key1", 68)
+                    .withInt("key2", 134)
                     .call();
             Toast.makeText(Module1MainActivity.this, "plus=" + call.getResult("result"), Toast.LENGTH_SHORT).show();
         });
@@ -49,10 +49,10 @@ public class Module1MainActivity extends AppCompatActivity {
         buttonCallAsync = findViewById(R.id.buttonCallAsync);
         buttonCallAsync.setOnClickListener(v -> {
             ZlRouter.getInstance().build("/app/aa_com")
-                    .withInt("key1",134)
-                    .withInt("key2",35)
+                    .withInt("key1", 134)
+                    .withInt("key2", 35)
                     .callAsync(result -> {
-                        Log.d(TAG,"thread~"+Thread.currentThread()+":"+result.getResult("result"));
+                        Log.d(TAG, "thread~" + Thread.currentThread() + ":" + result.getResult("result"));
 
                     });
         });
@@ -60,23 +60,23 @@ public class Module1MainActivity extends AppCompatActivity {
         buttonCallMainThread = findViewById(R.id.buttonCallMainThread);
         buttonCallMainThread.setOnClickListener(v -> {
             ZlRouter.getInstance().build("/app/bb_com")
-                    .withInt("key1",134)
-                    .withInt("key2",35)
+                    .withInt("key1", 134)
+                    .withInt("key2", 35)
                     .callOnMainThread(result -> {
-                        Log.d(TAG,"thread~"+Thread.currentThread()+":"+result.getResult("result"));
+                        Log.d(TAG, "thread~" + Thread.currentThread() + ":" + result.getResult("result"));
 
                     });
         });
 
         buttonFinish = findViewById(R.id.buttonFinish);
-        buttonFinish.setOnClickListener(v->{
+        buttonFinish.setOnClickListener(v -> {
 //            Intent intent = new Intent();
 //            intent.putExtra("back","123aaabbb");
 //            setResult(1002,intent);
             RtResult result = new RtResult();
             result.putResult("back_value", "123aaabbb啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊.....");
             finish();
-            ZlRouter.getInstance().getCallback(Module1MainActivity.this).onResult(result);
+            ZlRouter.getInstance().onActivityResult(Module1MainActivity.this, result);
         });
     }
 }

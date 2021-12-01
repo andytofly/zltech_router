@@ -72,10 +72,11 @@ public class ZlRouter {
 
     /**
      * 注意，如果设置isDebug = true，那么每次都会从dexFile加载，非常耗时间，仅用于调试；所以在调式模式，也要根据实际情况设置该参数;
+     *
      * @param debuggable
      * @param _application
      */
-    public static void init(boolean debuggable,Application _application) {
+    public static void init(boolean debuggable, Application _application) {
         setDebuggable(debuggable);
         init(_application);
     }
@@ -101,7 +102,7 @@ public class ZlRouter {
     public static void setDebuggable(boolean _isDebug) {
         debuggable = _isDebug;
         LogUtil.setLog(debuggable);
-        Log.d(Const.TAG," setLog debuggable = "+debuggable);
+        Log.d(Const.TAG, " setLog debuggable = " + debuggable);
     }
 
     public static boolean debuggable() {
@@ -119,8 +120,8 @@ public class ZlRouter {
         Set<String> routerMap;
         boolean debuggable = ZlRouter.debuggable();
         boolean newVersion = PackageUtils.isNewVersion(application);
-        LogUtil.fd(Const.TAG, "debuggable "+debuggable+" ,newVersion "+newVersion);
-        if ( debuggable || newVersion) {
+        LogUtil.fd(Const.TAG, "debuggable " + debuggable + " ,newVersion " + newVersion);
+        if (debuggable || newVersion) {
             routerMap = ClassUtils.getFileNameByPackageName(application, ROUTE_ROOT_PAKCAGE);
             Log.d(Const.TAG, " debuggable || 首次运行 || 版本更新，解析dex，获取路由表......");
             PackageUtils.updateVersion(application);
@@ -146,10 +147,10 @@ public class ZlRouter {
 
 
     public JumpCard build(String path) {
-        if (!initDone.get()) {
-            throw new RuntimeException("zlrouter没有初始化完成，无法调用!");
-        } else if (TextUtils.isEmpty(path)) {
+        if (TextUtils.isEmpty(path)) {
             throw new RuntimeException("路由地址无效!");
+        } else if (!initDone.get()) {
+            throw new RuntimeException("zlrouter没有初始化完成，无法调用!");
         } else {
             return build(path, extractGroup(path));
         }
@@ -209,12 +210,15 @@ public class ZlRouter {
      */
     private ConcurrentHashMap<String, OnResultCallback> activityCallbackMap = new ConcurrentHashMap<>();
 
-    public OnResultCallback getCallback(Activity activity) {
+    public void onActivityResult(Activity activity, RtResult result) {
+        OnResultCallback resultCallback = null;
         String canonicalName = activity.getClass().getCanonicalName();
         if (canonicalName != null && activityCallbackMap.containsKey(canonicalName)) {
-            return activityCallbackMap.get(canonicalName);
+            resultCallback = activityCallbackMap.get(canonicalName);
         }
-        return null;
+        if (resultCallback != null) {
+            resultCallback.onResult(result);
+        }
     }
 
     void navigate(final Context context, final JumpCard jumpCard, OnResultCallback callback) {
