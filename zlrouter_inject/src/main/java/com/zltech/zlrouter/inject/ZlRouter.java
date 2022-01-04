@@ -76,12 +76,12 @@ public class ZlRouter {
      * @param debuggable
      * @param _application
      */
-    public static void init(boolean debuggable, Application _application) {
+    public static void init(boolean debuggable, Application _application,Runnable runnable) {
         setDebuggable(debuggable);
-        init(_application);
+        init(_application,runnable);
     }
 
-    private static void init(Application _application) {
+    private static void init(Application _application,Runnable runnable) {
         application = _application;
         ZltechPoolExecutor.getInstance().execute(() -> {
             try {
@@ -89,6 +89,7 @@ public class ZlRouter {
                 loadInfo();
                 initDone.set(true);
                 LogUtil.d(Const.TAG, " zlrouter初始化完成!!!");
+                runnable.run();
             } catch (Exception e) {
                 e.printStackTrace();
                 LogUtil.e(Const.TAG, "zlrouter初始化失败!", e);
