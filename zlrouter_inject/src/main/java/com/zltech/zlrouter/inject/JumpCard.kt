@@ -7,6 +7,7 @@ import com.zltech.zlrouter.annotation.RouteMeta
 import com.zltech.zlrouter.inject.callback.OnResultCallback
 import com.zltech.zlrouter.inject.template.AbsComponent
 import com.zltech.zlrouter.inject.template.RtResult
+import java.io.Serializable
 import java.lang.ref.WeakReference
 import java.util.*
 
@@ -28,9 +29,9 @@ class JumpCard @JvmOverloads constructor(path: String?, group: String?, bundle: 
     }
 
 
-    private var mContext:Context? = null
+    private var mContext: Context? = null
 
-    fun withContext(context:Context):JumpCard{
+    fun withContext(context: Context): JumpCard {
         mContext = context
         return this
     }
@@ -88,6 +89,11 @@ class JumpCard @JvmOverloads constructor(path: String?, group: String?, bundle: 
 
     fun withFloat(key: String?, value: Float): JumpCard {
         extras.putFloat(key, value)
+        return this
+    }
+
+    fun withSerializable(key: String?, value: Serializable): JumpCard {
+        extras.putSerializable(key, value)
         return this
     }
 
@@ -168,17 +174,19 @@ class JumpCard @JvmOverloads constructor(path: String?, group: String?, bundle: 
      */
     @JvmOverloads
     fun call(callback: OnResultCallback? = null): RtResult? {
-        return ZlRouter.getInstance().dispatch(mContext,this, AbsComponent.InvokingType.Sync, callback)
+        return ZlRouter.getInstance()
+            .dispatch(mContext, this, AbsComponent.InvokingType.Sync, callback)
     }
 
     @JvmOverloads
     fun callAsync(callback: OnResultCallback? = null) {
-        ZlRouter.getInstance().dispatch(mContext,this, AbsComponent.InvokingType.Async, callback)
+        ZlRouter.getInstance().dispatch(mContext, this, AbsComponent.InvokingType.Async, callback)
     }
 
     @JvmOverloads
     fun callOnMainThread(callback: OnResultCallback? = null) {
-        ZlRouter.getInstance().dispatch(mContext,this, AbsComponent.InvokingType.MainThread, callback)
+        ZlRouter.getInstance()
+            .dispatch(mContext, this, AbsComponent.InvokingType.MainThread, callback)
     }
 
     init {
